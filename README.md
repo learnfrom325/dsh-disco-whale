@@ -17,7 +17,7 @@
 - 🐳 **小鲸鱼蹦迪**：按节拍上下压缩/拉伸（squash & stretch），并左右平移在整个屏幕里摇摆；
 - 🔊 **音响**：角色旁边立起一只音响，低音喇叭随拍鼓动、指示灯闪烁；
 - 💬 **气泡歌词**：小鲸鱼顶上的气泡每隔 9.2 秒换一句《朋友的酒》歌词；
-- 🎵 **音乐**：优先播放你自备的舞曲（见下文），没有则用内置合成旋律兜底；整段音乐播完之前不会自己结束；
+- 🎵 **音乐**：插件内置一段 188 秒的舞曲（`assets/music.mp3`），装上就有声；也支持换成自己的曲子；整段音乐播完之前不会自己结束；
 - 📝 **回复变歌词**：触发后紧接着的那条助手回复会被替换成 16 行歌词。
 
 发送 **「？」**：助手回复被替换成一句——
@@ -77,25 +77,21 @@ dsh plugin --profile web add link:<克隆下来的绝对路径>
 localStorage.setItem('dsh-disco-words', '蹦迪,跳舞,ohyeahyeah')  // 英文逗号分隔
 ```
 
-## 音乐（自备）
+## 音乐
 
-插件**不打包音乐**（体积与版权原因）。把你的舞曲放到下面任意一个位置，重启/reload 页面后即生效（无需重启 DSH）：
+插件**已内置**一段舞曲：`assets/music.mp3`（3.6 MB，48 kHz / 160 kbps 立体声，188 秒），装上即有音乐，无需任何配置。
+
+想换曲子：把音频放到下面任意位置，命中的优先使用（越靠前优先级越高）：
 
 ```
-<DSH_HOME>/disco-whale/music.mp3      ← 推荐
-<DSH_HOME>/disco-whale/dance.mp3      ← 旧命名，兼容
-<DSH_HOME>/whale-audio/dance.mp3      ← 直接复用 dsh-whale-widget 的音频目录
-<插件目录>/assets/music.mp3           ← 想随插件分发时放这里
+<DSH_HOME>/disco-whale/music.mp3      ← 优先级最高（你自己的曲子）
+<插件目录>/assets/music.mp3           ← 内置（仓库自带）
+<DSH_HOME>/whale-audio/dance.mp3      ← 兜底：复用 dsh-whale-widget 的音频目录
 ```
 
-支持 `mp3 / wav / ogg / m4a / flac / aac`。找不到文件时用内置的 150BPM 合成旋律兜底（8 小节，循环感强但很短）。
+支持 `mp3 / wav / ogg / m4a / flac / aac`；换曲子后刷新页面即可生效（无需重启 DSH）。所有候选都找不到时，用内置的 150BPM 合成旋律兜底。
 
-**节拍对齐**：默认按 130 BPM、首个拍点在音频 0.199s 处对齐（对一首 188 秒舞曲测出来的）。换成别的曲子后如果感觉"踩不准"，改 `assets/disco-widget.js` 顶部的：
-
-```js
-var DISCO_BPM = 130     // 改成分曲子的 BPM
-var DISCO_PHASE = 0.199 // 首个拍点距音频开头的秒数
-```
+**节拍对齐**：默认按 130 BPM、首个拍点距音频开头 0.199s 对齐（对应内置那段 188 秒舞曲）。换成别的曲子后如果"踩不准"，改 `assets/disco-widget.js` 顶部的 `DISCO_BPM` / `DISCO_PHASE`。
 
 ## 自定义
 
@@ -159,6 +155,7 @@ dsh-disco-whale/
 │   ├── disco-widget.js   # 前端挂件（自包含，约 1000 行）
 │   ├── char.png          # 默认角色（小鲸鱼）
 │   ├── char-alt.png      # 备用角色
+│   ├── music.mp3         # 内置舞曲（3.6 MB，可被用户目录的曲子覆盖）
 │   └── icon.png          # 插件图标
 └── tests/smoke.cjs       # 冒烟测试（vm + DOM/Audio stub）
 ```
@@ -175,7 +172,7 @@ dsh-disco-whale/
 - 代码：**MIT**（见 `LICENSE`）。
 - `assets/char.png`、`assets/char-alt.png` 来自 [dsh-whale-widget](https://github.com/MeteorNOX/DeepSeek-Balance-Whale-Widget)（原始素材 as-is，原插件作者 @T7moris）。
 - 歌词《朋友的酒》：著作权归原作者所有，此处仅作彩蛋示例，请勿用于商业用途。
-- 音乐：插件不附带，请自备。
+- 内置音乐 `assets/music.mp3`：供本彩蛋演示使用，权利归原始权利人；如果你要再分发/商用，请自行替换成你有权使用的曲子（放 `<DSH_HOME>/disco-whale/music.mp3` 即可覆盖内置文件）。
 
 ## 开发
 
