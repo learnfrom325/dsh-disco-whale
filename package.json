@@ -29,5 +29,13 @@
       "patch": "./cordis.patch.yml"
     }
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/learnfrom325/dsh-disco-whale.git"
+  },
+  "homepage": "https://github.com/learnfrom325/dsh-disco-whale#readme",
+  "bugs": {
+    "url": "https://github.com/learnfrom325/dsh-disco-whale/issues"
+  },
   "license": "MIT"
 }

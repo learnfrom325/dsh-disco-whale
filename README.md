@@ -2,6 +2,8 @@
 
 > DSH（DeepSeek Harness）桌面端 / Web 端的 **「鲸鱼蹦迪」彩蛋插件**。
 > 发送「欧耶耶」，整个界面秒变舞厅。
+>
+> GitHub: <https://github.com/learnfrom325/dsh-disco-whale>
 
 <p align="center">
   <img src="assets/char.png" width="220" alt="小鲸鱼角色">
@@ -35,13 +37,13 @@
 dsh plugin --profile web add dsh-disco-whale
 
 # 或者直接从 GitHub 仓库安装
-dsh plugin --profile web add github:<owner>/dsh-disco-whale
+dsh plugin --profile web add github:learnfrom325/dsh-disco-whale
 ```
 
 ### 方式 B：本地目录（开发 / 自用）
 
 ```bash
-git clone https://github.com/<owner>/dsh-disco-whale.git
+git clone https://github.com/learnfrom325/dsh-disco-whale.git
 dsh plugin --profile web add link:<克隆下来的绝对路径>
 ```
 
