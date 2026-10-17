@@ -23,7 +23,7 @@
     // 配置
     // =======================================================================
 
-    var DISCO_VERSION = '0.1.0'
+    var DISCO_VERSION = '0.1.1'
 
     /** 触发词：归一化（去空白/标点 + 小写）后整条等于其中之一才算。 */
     var DISCO_WORDS = ['欧耶耶', '欧耶', '欧也', '耶耶耶', 'oh yeah yeah', 'ohyeahyeah', 'our ye ye', 'ouyeye', 'oyeye']
@@ -109,7 +109,9 @@
     var CSS = String.raw`
 :root{--dshdw-beat:.4615s;--dshdw-beat-delay:0s}
 /* ---------- 角色本体 ---------- */
-.dshdw-root{position:fixed;right:14px;bottom:0;width:var(--dshdw-size,clamp(130px,16vw,210px));height:var(--dshdw-size,clamp(130px,16vw,210px));z-index:2147482900;pointer-events:none;transform-origin:50% 100%;will-change:transform}
+.dshdw-root{position:fixed;right:14px;bottom:0;width:var(--dshdw-size,clamp(130px,16vw,210px));height:var(--dshdw-size,clamp(130px,16vw,210px));z-index:2147482900;pointer-events:none;transform-origin:50% 100%;will-change:transform;opacity:0;visibility:hidden;transition:opacity .3s ease,visibility 0s linear .3s}
+/* 平时完全隐身，只在播放动画时整体淡入 */
+.dshdw-root.dshdw-active{opacity:1;visibility:visible;transition:opacity .3s ease,visibility 0s linear 0s}
 .dshdw-body{position:absolute;left:0;top:0;width:100%;height:100%;transform-origin:50% 100%}
 .dshdw-img{position:absolute;left:0;bottom:0;width:100%;height:100%;object-fit:contain;object-position:50% 100%;pointer-events:auto;cursor:pointer;user-select:none;-webkit-user-drag:none;filter:drop-shadow(0 6px 14px rgba(0,0,0,.35))}
 .dshdw-root.dshdw-dancing .dshdw-body{animation:dshdw-bounce var(--dshdw-beat,.4615s) cubic-bezier(.28,1.45,.44,1) infinite;animation-delay:var(--dshdw-beat-delay,0s);will-change:transform}
@@ -276,6 +278,13 @@
         root.appendChild(popEl)
         root.appendChild(body)
         ;(document.body || document.documentElement).appendChild(root)
+        if (dancing) {
+          try {
+            root.classList.add('dshdw-active')
+          } catch (err) {
+            /* 忽略 */
+          }
+        }
         return root
       } catch (err) {
         return null
@@ -838,6 +847,11 @@
         }
 
         mount()
+        try {
+          if (root) root.classList.add('dshdw-active')
+        } catch (err) {
+          /* 忽略 */
+        }
         applyBeat(DISCO_BPM, DISCO_PHASE)
         spawnFx()
         speaker(true)
@@ -917,6 +931,12 @@
         hideSay()
         try {
           if (root) root.classList.remove('dshdw-dancing')
+        } catch (err) {
+          /* 忽略 */
+        }
+        // 收场后整体隐身，只在下次播放时再出现
+        try {
+          if (root) root.classList.remove('dshdw-active')
         } catch (err) {
           /* 忽略 */
         }
