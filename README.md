@@ -5,6 +5,9 @@
 >
 > GitHub: <https://github.com/learnfrom325/dsh-disco-whale>
 
+**灵感来源**：B 站视频 `BV1kTp962EJG`（UP 主：幸羽雪雪）
+**音频来源**：B 站视频 `BV1hXbN6VEKV`（UP 主：活跃黑江乐）——《朋友的酒》DJ 完整版
+
 <p align="center">
   <img src="assets/char.png" width="220" alt="小鲸鱼角色">
 </p>
@@ -80,6 +83,8 @@ localStorage.setItem('dsh-disco-words', '蹦迪,跳舞,ohyeahyeah')  // 英文�
 ## 音乐
 
 插件**已内置**一段舞曲：`assets/music.mp3`（3.6 MB，48 kHz / 160 kbps 立体声，188 秒），装上即有音乐，无需任何配置。
+
+> 音频来自 B 站视频 `BV1hXbN6VEKV`（UP 主：活跃黑江乐）的《朋友的酒》DJ 完整版，仅作彩蛋演示使用，版权归原作者。
 
 想换曲子：把音频放到下面任意位置，命中的优先使用（越靠前优先级越高）：
 
@@ -172,7 +177,8 @@ dsh-disco-whale/
 - 代码：**MIT**（见 `LICENSE`）。
 - `assets/char.png`、`assets/char-alt.png` 来自 [dsh-whale-widget](https://github.com/MeteorNOX/DeepSeek-Balance-Whale-Widget)（原始素材 as-is，原插件作者 @T7moris）。
 - 歌词《朋友的酒》：著作权归原作者所有，此处仅作彩蛋示例，请勿用于商业用途。
-- 内置音乐 `assets/music.mp3`：供本彩蛋演示使用，权利归原始权利人；如果你要再分发/商用，请自行替换成你有权使用的曲子（放 `<DSH_HOME>/disco-whale/music.mp3` 即可覆盖内置文件）。
+- 内置音乐 `assets/music.mp3`：来自 B 站 `BV1hXbN6VEKV`（UP 主：活跃黑江乐）《朋友的酒》DJ 完整版，供本彩蛋演示使用，权利归原作者；如果你要再分发/商用，请自行替换成你有权使用的曲子（放 `<DSH_HOME>/disco-whale/music.mp3` 即可覆盖内置文件）。
+- 灵感来源：B 站 `BV1kTp962EJG`（UP 主：幸羽雪雪）。
 
 ## 开发
 

@@ -30,8 +30,11 @@ Third-party notices:
 - The song lyrics included in assets/disco-widget.js ("朋友的酒") remain the
   property of their original authors and are used here only as an easter-egg
   example.
-- assets/music.mp3 is bundled for demonstration of this easter egg only; all
-  rights remain with the original rights holders. Redistribute or use it
-  commercially only if you have the rights to do so — otherwise replace it
-  (see README: drop your own file at <DSH_HOME>/disco-whale/music.mp3, which
-  overrides the bundled track).
+- assets/music.mp3 is bundled for demonstration of this easter egg only. It is
+  the "朋友的酒 DJ 完整版" track from the Bilibili video BV1hXbN6VEKV
+  (uploader: 活跃黑江乐); all rights remain with the original rights holders.
+  Redistribute or use it commercially only if you have the rights to do so —
+  otherwise replace it (see README: drop your own file at
+  <DSH_HOME>/disco-whale/music.mp3, which overrides the bundled track).
+- Inspiration for this plugin: the Bilibili video BV1kTp962EJG
+  (uploader: 幸羽雪雪).
