@@ -1,0 +1,16 @@
+# ============================================================================
+# dsh-disco-whale —— DSH bundle patch
+# ============================================================================
+# 插件的"挂载声明"。DSH 启动时按 bundle 层栈叠加各插件 patch，
+# 本文件把蹦迪挂件插入 Web profile 的配置树。
+#
+# 安装方式（任选其一）：
+#   dsh plugin --profile web add dsh-disco-whale
+#   dsh plugin --profile web add link:<本目录绝对路径>
+# 手工安装：把本目录整个复制到
+#   <DSH_HOME>/profiles/desktop/node_modules/dsh-disco-whale/
+# ============================================================================
+
+- insert:
+    - id: dsh-disco-whale
+      name: dsh-disco-whale
