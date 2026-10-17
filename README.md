@@ -30,15 +30,13 @@
 
 插件是标准 DSH bundle 插件，装进 `web`（桌面端为 `desktop`）profile 即可。
 
-### 方式 A：从 npm / GitHub 安装（推荐）
+### 方式 A：从 GitHub 安装（推荐）
 
 ```bash
-# 已发布到 npm 后
-dsh plugin --profile web add dsh-disco-whale
-
-# 或者直接从 GitHub 仓库安装
 dsh plugin --profile web add github:learnfrom325/dsh-disco-whale
 ```
+
+> 本插件目前**未发布到 npm**；也可以用 DSH 桌面端的插件管理器（市场）按 GitHub 地址安装。
 
 ### 方式 B：本地目录（开发 / 自用）
 
