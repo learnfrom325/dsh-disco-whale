@@ -1,7 +1,7 @@
 {
   "name": "dsh-disco-whale",
-  "version": "0.1.1",
-  "description": "DSH 桌面端/网页端的「鲸鱼蹦迪」彩蛋插件：发送「欧耶耶」后，屏幕亮起迪斯科舞厅灯光、小鲸鱼左右摇摆蹦迪、旁边立起音响、气泡轮播《朋友的酒》歌词，并把你后续那条助手回复换成歌词；发「？」则获得一句严肃提醒。音乐可自备，缺省用内置合成音。",
+  "version": "0.5.2",
+  "description": "DSH 桌面端/网页端的「鲸鱼蹦迪」彩蛋插件：新宿梗先由模型在聊天里转场，再播放视频；28 秒和 88 秒 Q 版 DeepSeek 娘释放虚式「茈」击中 Q 版龙娘，41 秒双方展开领域。",
   "keywords": [
     "dsh",
     "dsh-plugin",
@@ -14,7 +14,7 @@
   "main": "lib/index.js",
   "scripts": {
     "check": "node --check lib/index.js && node --check assets/disco-widget.js",
-    "test": "node tests/smoke.cjs"
+    "test": "node tests/smoke.cjs && node tests/host.mjs"
   },
   "icon": "./assets/icon.png",
   "files": [

@@ -71,14 +71,23 @@ function makeEl(tag) {
     getAttribute(k) {
       return k in this.attrs ? this.attrs[k] : null
     },
+    removeAttribute(k) {
+      delete this.attrs[k]
+    },
+    play() {
+      return Promise.resolve()
+    },
+    pause() {},
+    load() {},
     addEventListener(type, fn) {
       ;(this._listeners[type] = this._listeners[type] || []).push(fn)
     },
     closest() {
       return null
     },
-    querySelector() {
-      return null
+    querySelector(sel) {
+      if (String(sel).startsWith('.')) return this.children.find((c) => c.className === String(sel).slice(1)) || null
+      return this.children.find((c) => c.tagName.toLowerCase() === String(sel).toLowerCase()) || null
     },
     querySelectorAll() {
       return []
@@ -301,6 +310,67 @@ setTimeout(() => {
   ok('回复写入 16 行歌词', !!box && box.children.length === 16)
   ok('旧回复未被误动', !rootA.attrs['data-dshdw-lines'])
 
-  console.log(fails ? 'FAILED ' + fails : 'ALL PASS')
-  process.exit(fails ? 1 : 0)
+  // —— 视频彩蛋：控制台入口 ——
+  run('window.dshDiscoVideo()')
+  const videoBox = doc.body.children.find((c) => c.className === 'dshdw-video')
+  const videoEl = videoBox && videoBox.children.find((c) => c.tagName === 'VIDEO')
+  ok('视频层已创建', !!videoBox)
+  ok('video 指向视频路由', !!videoEl && videoEl.src === '/dsh-disco/video.mp4')
+  ok('全屏播放时 body 标记', doc.body.classList.contains('dshdw-video-on'))
+  ok('video 带 autoplay', !!videoEl && videoEl.autoplay === true)
+  videoEl.currentTime = 28.1
+  videoEl._listeners.timeupdate.forEach((fn) => fn())
+  let cast = videoBox.children.find((c) => c.className === 'dshdw-cast')
+  ok('28 秒右下角施法', !!cast && cast.children.some((c) => c.src === '/dsh-disco/deepseek-cast.png'))
+  let target = videoBox.children.find((c) => c.className === 'dshdw-target')
+  ok('28 秒 Q 版龙娘受击', !!target && target.children.some((c) => c.src === '/dsh-disco/dragon-chibi.png') && target.children.some((c) => c.className === 'dshdw-target-burst'))
+  videoEl.currentTime = 41.1
+  videoEl._listeners.timeupdate.forEach((fn) => fn())
+  const domains = videoBox.children.find((c) => c.className === 'dshdw-domains')
+  const left = domains && domains.children.find((c) => c.className === 'dshdw-domain left')
+  const right = domains && domains.children.find((c) => c.className === 'dshdw-domain right')
+  ok('41 秒双方领域展开', !!left && !!right && domains.children.some((c) => c.className === 'dshdw-domain-clash'))
+  ok('双方领域显示各自结印姿势', !!left && left.children.some((c) => c.src === '/dsh-disco/dragon-domain.png') && !!right && right.children.some((c) => c.src === '/dsh-disco/deepseek-domain.png'))
+  videoEl.currentTime = 88.1
+  videoEl._listeners.timeupdate.forEach((fn) => fn())
+  cast = videoBox.children.filter((c) => c.className === 'dshdw-cast')
+  target = videoBox.children.filter((c) => c.className === 'dshdw-target')
+  ok('88 秒再次施法且不叠层', cast.length === 1)
+  ok('88 秒再次受击且不叠层', target.length === 1)
+  run('window.dshDiscoVideoClose()')
+  ok('关闭后移除视频层', !doc.body.children.find((c) => c.className === 'dshdw-video'))
+  ok('关闭后移除 body 标记', !doc.body.classList.contains('dshdw-video-on'))
+
+  // —— 视频彩蛋：composer 回车含「新宿决战」 ——
+  const enterEvent = {
+    key: 'Enter',
+    isComposing: false,
+    shiftKey: false,
+    ctrlKey: false,
+    metaKey: false,
+    altKey: false,
+    target: { value: '今晚新宿决战该上了' },
+    preventDefault() {},
+    stopPropagation() {},
+  }
+  doc.listeners['keydown'].forEach((fn) => fn(enterEvent))
+  ok('回车发送含「新宿决战」时等待模型回复', !doc.body.children.find((c) => c.className === 'dshdw-video'))
+  const replyBody = makeEl('div')
+  replyBody.className = 'v5IAXa_body'
+  replyBody.textContent = '原本的回答仍然在这里'
+  const replyRoot = makeEl('div')
+  replyRoot.className = 'v5IAXa_root'
+  replyRoot.appendChild(replyBody)
+  roots = [rootA, rootB, replyRoot]
+
+  enterEvent.target.value = '真拿你没办法，那坐好喽'
+  doc.listeners['keydown'].forEach((fn) => fn(enterEvent))
+  ok('B站开场梗发送后仍等待模型回复', !doc.body.children.find((c) => c.className === 'dshdw-video'))
+
+  setTimeout(() => {
+    const meme = replyRoot.children.find((c) => c.className === 'dshdw-meme')
+    ok('不在 DOM 里伪造梗回复', !meme)
+    console.log(fails ? 'FAILED ' + fails : 'ALL PASS')
+    process.exit(fails ? 1 : 0)
+  }, 500)
 }, 700)

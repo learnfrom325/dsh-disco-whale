@@ -9,8 +9,13 @@
  *   2. 宿主：插件监听会话 `user/message`，命中后把信号写进 `/dsh-disco/signal.json`，
  *      前端每秒轮询到新 seq 再开演（语音输入、快捷发送也不会漏）。
  *
- * 手动结束：Esc，或双击小鲸鱼。
+ * 另外：宿主收到新宿梗后让模型先生成聊天转场；回复完成才发视频信号，
+ * 前端在页面最上层全屏无边框播放彩蛋视频
+ * （内置 assets/video.mp4，可被 <DSH_HOME>/disco-whale/video.mp4 覆盖）。
+ *
+ * 手动结束：Esc，或双击小鲸鱼 / 点击视频画面。
  * 控制台调试：dshDiscoNow() / dshDiscoTest() / dshDiscoStop() / dshDiscoSay(text)
+ *            / dshDiscoVideo() / dshDiscoVideoClose()
  */
 (function () {
   'use strict'
@@ -23,10 +28,13 @@
     // 配置
     // =======================================================================
 
-    var DISCO_VERSION = '0.1.1'
+    var DISCO_VERSION = '0.5.2'
 
     /** 触发词：归一化（去空白/标点 + 小写）后整条等于其中之一才算。 */
     var DISCO_WORDS = ['欧耶耶', '欧耶', '欧也', '耶耶耶', 'oh yeah yeah', 'ohyeahyeah', 'our ye ye', 'ouyeye', 'oyeye']
+
+    /** 彩蛋视频地址（可由 localStorage['dsh-disco-video'] 覆盖）。 */
+    var DISCO_VIDEO_URL = '/dsh-disco/video.mp4'
 
     /** 问号消息的固定回复。 */
     var DISCO_QUESTION_REPLY = '发什么问号，严肃点全体保持Q弹！'
@@ -93,6 +101,9 @@
           .filter(Boolean)
         if (parsedWords.length) DISCO_WORDS = parsedWords
       }
+      // 视频地址覆盖（相对路径 / https URL / data:video 均可）
+      var storedVideoUrl = window.localStorage && window.localStorage.getItem('dsh-disco-video')
+      if (storedVideoUrl) DISCO_VIDEO_URL = String(storedVideoUrl)
       // 尺寸/摇摆幅度覆盖（任意 CSS 长度值，如 "180px" / "40vw"）
       var storedSize = window.localStorage && window.localStorage.getItem('dsh-disco-size')
       if (storedSize) DISCO_SIZE = String(storedSize)
@@ -167,6 +178,43 @@
 /* ⑦ 全屏频闪 */
 .dshdw-fx-strobe{position:absolute;left:0;top:0;width:100%;height:100%;background:radial-gradient(70% 60% at 50% 42%,rgba(255,255,255,.9),rgba(255,240,255,.24) 42%,rgba(255,255,255,0) 76%);mix-blend-mode:screen;opacity:0;animation:dshdw-strobe var(--dshdw-beat,.4615s) steps(1) infinite;animation-delay:var(--dshdw-beat-delay,0s)}
 @keyframes dshdw-strobe{0%{opacity:.34}12%{opacity:0}100%{opacity:0}}
+/* ---------- 新宿决战彩蛋视频：全屏、无边框、无播放器 UI ---------- */
+.dshdw-video{position:fixed;inset:0;z-index:2147483001;margin:0;padding:0;border:0;outline:0;background:#000;overflow:hidden;cursor:pointer;opacity:0;transition:opacity .25s ease}
+.dshdw-video.dshdw-video-show{opacity:1}
+.dshdw-video video{position:absolute;inset:0;width:100%;height:100%;display:block;object-fit:contain;background:#000}
+.dshdw-video-close{position:absolute;top:14px;right:18px;z-index:2;appearance:none;border:0;border-radius:999px;background:rgba(0,0,0,.55);color:#fff;font:600 13px/1 inherit;padding:8px 14px;cursor:pointer;opacity:.35;transition:opacity .2s ease}
+.dshdw-video-close:hover{opacity:1}
+.dshdw-cast{position:absolute;right:14px;bottom:8px;width:clamp(112px,18vw,180px);aspect-ratio:300/274;z-index:3;pointer-events:none;animation:dshdw-cast-in 2.2s ease-out both}
+.dshdw-cast img{display:block;width:100%;height:100%;object-fit:contain;transform:scaleX(-1);filter:drop-shadow(0 2px 8px rgba(116,69,222,.7))}
+.dshdw-cast-orb{position:absolute;left:6%;top:31%;width:19%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 42% 38%,#fff 0 11%,#edcaff 22%,#9950f5 48%,#4c1fa8 71%,transparent 76%);box-shadow:0 0 11px 4px #b76bff,0 0 27px 8px rgba(142,61,255,.65);animation:dshdw-orb-flight 1.75s ease-in both}
+.dshdw-cast-orb:before,.dshdw-cast-orb:after{content:'';position:absolute;inset:-24%;border:2px solid rgba(88,214,255,.9);border-radius:50%;animation:dshdw-orb-spin .45s linear infinite}
+.dshdw-cast-orb:after{inset:-39%;border-color:rgba(255,105,151,.85);animation-direction:reverse}
+@keyframes dshdw-cast-in{0%,100%{opacity:0;transform:translateY(12px)}12%,78%{opacity:.9;transform:translateY(0)}}
+@keyframes dshdw-orb-flight{0%,18%{opacity:0;transform:translate(0,0) scale(.18)}35%{opacity:1;transform:translate(-10px,-3px) scale(.9)}80%{opacity:1;transform:translate(calc(-1 * clamp(75px,10vw,130px)),-40px) scale(1.45)}100%{opacity:0;transform:translate(calc(-1 * clamp(154px,20vw,260px)),-72px) scale(1.9)}}
+@keyframes dshdw-orb-spin{to{transform:rotate(360deg)}}
+.dshdw-target{position:absolute;right:calc(clamp(112px,18vw,180px) + clamp(65px,9vw,110px));bottom:8px;width:clamp(104px,16vw,160px);aspect-ratio:1301/1209;z-index:3;pointer-events:none;animation:dshdw-target-hit 2.5s ease-in-out both}
+.dshdw-target img{display:block;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 3px 8px rgba(240,205,255,.9))}
+.dshdw-target-burst{position:absolute;left:70%;top:35%;width:62%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,#fff 0 8%,#f6d5ff 16%,rgba(162,73,255,.86) 30%,rgba(109,53,226,.2) 55%,transparent 72%);box-shadow:0 0 30px 8px rgba(195,118,255,.85);opacity:0;animation:dshdw-target-burst 2.5s ease-out both}
+@keyframes dshdw-target-hit{0%{opacity:0;transform:translateX(-12px) scale(.94)}12%,49%{opacity:1;transform:translateX(0) rotate(0) scale(1)}58%{opacity:1;transform:translateX(-20px) rotate(-12deg) scale(.88);filter:brightness(1.2)}76%{opacity:1;transform:translateX(-8px) rotate(-5deg) scale(.94);filter:brightness(1.05)}100%{opacity:0;transform:translateX(-14px) scale(.92)}}
+@keyframes dshdw-target-burst{0%,48%{opacity:0;transform:scale(.2)}56%{opacity:1;transform:scale(1.05)}74%{opacity:.4;transform:scale(1.7)}100%{opacity:0;transform:scale(2)}}
+.dshdw-domains{position:absolute;inset:0;z-index:4;overflow:hidden;pointer-events:none;animation:dshdw-domains-show 3.4s ease-in-out both}
+.dshdw-domain{position:absolute;top:0;bottom:0;width:50%;overflow:hidden;isolation:isolate}
+.dshdw-domain.left{left:0;background:radial-gradient(circle at 60% 54%,rgba(241,216,255,.9),rgba(141,80,213,.57) 35%,rgba(42,12,80,.7) 68%,rgba(12,4,27,.75))}
+.dshdw-domain.right{right:0;background:radial-gradient(circle at 40% 54%,rgba(207,250,255,.9),rgba(56,130,231,.58) 35%,rgba(7,31,104,.72) 68%,rgba(2,9,37,.78))}
+.dshdw-domain-ring{position:absolute;left:50%;top:52%;width:min(60vw,600px);aspect-ratio:1;border:3px solid rgba(255,255,255,.85);border-radius:50%;box-shadow:0 0 25px 8px currentColor,inset 0 0 32px 4px currentColor;color:#dcb4ff;animation:dshdw-domain-ring 2.7s ease-out both}
+.dshdw-domain.right .dshdw-domain-ring{color:#70d9ff;animation-delay:.08s}
+.dshdw-domain-ring::before,.dshdw-domain-ring::after{content:'';position:absolute;inset:10%;border:2px dashed rgba(255,255,255,.7);border-radius:50%;animation:dshdw-orb-spin 5s linear infinite}
+.dshdw-domain-ring::after{inset:24%;border-style:solid;animation-direction:reverse}
+.dshdw-domain-character{position:absolute;bottom:5%;left:50%;width:clamp(160px,29vw,350px);max-height:55vh;object-fit:contain;transform:translateX(-50%);filter:drop-shadow(0 3px 24px currentColor);color:#eed1ff;animation:dshdw-domain-rise 3.4s ease-out both}
+.dshdw-domain.right .dshdw-domain-character{color:#a0efff;transform:translateX(-50%) scaleX(-1);animation-name:dshdw-domain-rise-mirror}
+.dshdw-domain-title{position:absolute;top:15%;left:50%;transform:translateX(-50%);color:#fff;white-space:nowrap;font:800 clamp(20px,4vw,50px)/1.2 system-ui,"Microsoft YaHei",sans-serif;letter-spacing:.14em;text-shadow:0 0 12px currentColor,0 3px 14px #171038;animation:dshdw-domain-title 3.4s ease-out both}
+.dshdw-domain-clash{position:absolute;left:50%;top:0;width:4px;height:100%;transform:translateX(-50%);background:#fff;box-shadow:0 0 14px 8px #fff,0 0 60px 25px #c99eff;animation:dshdw-domain-clash 3.4s ease-in-out both}
+@keyframes dshdw-domains-show{0%{opacity:0}9%,79%{opacity:1}100%{opacity:0}}
+@keyframes dshdw-domain-ring{0%{opacity:0;transform:translate(-50%,-50%) scale(.08) rotate(-80deg)}25%{opacity:1}78%{opacity:.85;transform:translate(-50%,-50%) scale(1.15) rotate(120deg)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.4) rotate(160deg)}}
+@keyframes dshdw-domain-rise{0%{opacity:0;transform:translate(-50%,30px) scale(.75)}20%,77%{opacity:1;transform:translate(-50%,0) scale(1)}100%{opacity:0;transform:translate(-50%,-8px) scale(1.03)}}
+@keyframes dshdw-domain-rise-mirror{0%{opacity:0;transform:translate(-50%,30px) scale(-.75,.75)}20%,77%{opacity:1;transform:translate(-50%,0) scale(-1,1)}100%{opacity:0;transform:translate(-50%,-8px) scale(-1.03,1.03)}}
+@keyframes dshdw-domain-title{0%,10%{opacity:0;transform:translate(-50%,12px)}24%,76%{opacity:1;transform:translate(-50%,0)}100%{opacity:0}}
+@keyframes dshdw-domain-clash{0%,14%{opacity:0;transform:translateX(-50%) scaleY(.1)}29%,66%{opacity:1;transform:translateX(-50%) scaleY(1)}100%{opacity:0;transform:translateX(-50%) scaleY(1)}}
 /* ---------- 聊天区被替换的回复 ---------- */
 .dshdw-lines{margin:2px 0 0;padding:0}
 .dshdw-lines p{margin:4px 0;line-height:1.6}
@@ -197,6 +245,11 @@
     var signalSeq = 0
     var signalReady = false
     var composingNow = false
+    var videoEl = null
+    var videoTimer = null
+    var videoOn = false
+    var castTimer = null
+    var domainTimer = null
 
     var replyWatch = null
     var replyTicker = null
@@ -210,7 +263,7 @@
       try {
         return String(text == null ? '' : text)
           .toLowerCase()
-          .replace(/[\s\u3000,.!?;:'"，。、！？；：…·~_\-()（）[\]【】]/g, '')
+          .replace(/[\s\u3000,.!?;:'"，。、！？；：…·~_\-()（）[\]【】「」“”‘’]/g, '')
       } catch (err) {
         return ''
       }
@@ -361,6 +414,219 @@
         speakerEl = sp
       } catch (err) {
         /* 忽略 */
+      }
+    }
+
+    // =======================================================================
+    // 新宿决战彩蛋：全屏无边框视频
+    // =======================================================================
+
+    function castPurple(box) {
+      try {
+        if (!box || !box.parentNode) return
+        var old = box.querySelector('.dshdw-cast')
+        if (old && old.parentNode) old.parentNode.removeChild(old)
+        var oldTarget = box.querySelector('.dshdw-target')
+        if (oldTarget && oldTarget.parentNode) oldTarget.parentNode.removeChild(oldTarget)
+        if (castTimer) clearTimeout(castTimer)
+        var target = document.createElement('div')
+        target.className = 'dshdw-target'
+        var targetImg = document.createElement('img')
+        targetImg.src = '/dsh-disco/dragon-chibi.png'
+        targetImg.alt = ''
+        target.appendChild(targetImg)
+        var burst = document.createElement('span')
+        burst.className = 'dshdw-target-burst'
+        target.appendChild(burst)
+        box.appendChild(target)
+        var cast = document.createElement('div')
+        cast.className = 'dshdw-cast'
+        var img = document.createElement('img')
+        img.src = '/dsh-disco/deepseek-cast.png'
+        img.alt = ''
+        cast.appendChild(img)
+        var orb = document.createElement('span')
+        orb.className = 'dshdw-cast-orb'
+        cast.appendChild(orb)
+        box.appendChild(cast)
+        castTimer = setTimeout(function () {
+          castTimer = null
+          if (cast.parentNode) cast.parentNode.removeChild(cast)
+          if (target.parentNode) target.parentNode.removeChild(target)
+        }, 2500)
+      } catch (err) {
+        /* 彩蛋特效不应打断视频 */
+      }
+    }
+
+    function expandDomains(box) {
+      try {
+        if (!box || !box.parentNode) return
+        var old = box.querySelector('.dshdw-domains')
+        if (old && old.parentNode) old.parentNode.removeChild(old)
+        if (domainTimer) clearTimeout(domainTimer)
+        var overlay = document.createElement('div')
+        overlay.className = 'dshdw-domains'
+        overlay.setAttribute('aria-hidden', 'true')
+        var sides = [
+          { side: 'left', src: '/dsh-disco/dragon-domain.png' },
+          { side: 'right', src: '/dsh-disco/deepseek-domain.png' }
+        ]
+        for (var i = 0; i < sides.length; i++) {
+          var field = document.createElement('div')
+          field.className = 'dshdw-domain ' + sides[i].side
+          var ring = document.createElement('span')
+          ring.className = 'dshdw-domain-ring'
+          field.appendChild(ring)
+          var character = document.createElement('img')
+          character.className = 'dshdw-domain-character'
+          character.src = sides[i].src
+          character.alt = ''
+          field.appendChild(character)
+          var title = document.createElement('span')
+          title.className = 'dshdw-domain-title'
+          title.textContent = '领域展开'
+          field.appendChild(title)
+          overlay.appendChild(field)
+        }
+        var clash = document.createElement('span')
+        clash.className = 'dshdw-domain-clash'
+        overlay.appendChild(clash)
+        box.appendChild(overlay)
+        domainTimer = setTimeout(function () {
+          domainTimer = null
+          if (overlay.parentNode) overlay.parentNode.removeChild(overlay)
+        }, 3400)
+      } catch (err) {
+        /* 领域特效不应打断视频 */
+      }
+    }
+
+    function closeVideo() {
+      try {
+        if (castTimer) {
+          clearTimeout(castTimer)
+          castTimer = null
+        }
+        if (domainTimer) {
+          clearTimeout(domainTimer)
+          domainTimer = null
+        }
+        if (videoTimer) {
+          clearTimeout(videoTimer)
+          videoTimer = null
+        }
+        if (videoEl) {
+          var v = videoEl.querySelector('video')
+          if (v) {
+            try {
+              v.pause()
+            } catch (err) {
+              /* 忽略 */
+            }
+            v.removeAttribute('src')
+            try {
+              v.load()
+            } catch (err2) {
+              /* 忽略 */
+            }
+          }
+          if (videoEl.parentNode) videoEl.parentNode.removeChild(videoEl)
+        }
+      } catch (err) {
+        /* 忽略 */
+      }
+      videoEl = null
+      videoOn = false
+      try {
+        document.body.classList.remove('dshdw-video-on')
+      } catch (err2) {
+        /* 忽略 */
+      }
+    }
+
+    function playVideo() {
+      try {
+        if (videoOn) return
+        if (!document.body) return
+        closeVideo()
+        videoOn = true
+        var box = document.createElement('div')
+        box.className = 'dshdw-video'
+        var v = document.createElement('video')
+        v.src = DISCO_VIDEO_URL
+        v.autoplay = true
+        v.playsInline = true
+        v.setAttribute('playsinline', '1')
+        v.setAttribute('webkit-playsinline', '1')
+        v.preload = 'auto'
+        box.appendChild(v)
+        var btn = document.createElement('button')
+        btn.type = 'button'
+        btn.className = 'dshdw-video-close'
+        btn.title = '关闭（Esc / 点击画面）'
+        btn.textContent = '✕'
+        btn.addEventListener('click', function (ev) {
+          try {
+            ev.stopPropagation()
+          } catch (err) {
+            /* 忽略 */
+          }
+          closeVideo()
+        })
+        box.appendChild(btn)
+        box.addEventListener('click', function () {
+          closeVideo()
+        })
+        v.addEventListener('ended', function () {
+          closeVideo()
+        })
+        v.addEventListener('error', function () {
+          log('video failed: ' + DISCO_VIDEO_URL)
+          closeVideo()
+        })
+        var marks = [28, 41, 88]
+        var fired = [false, false, false]
+        var previousTime = 0
+        v.addEventListener('timeupdate', function () {
+          var now = Number(v.currentTime) || 0
+          if (now < previousTime - 1) {
+            for (var i = 0; i < marks.length; i++) if (now < marks[i]) fired[i] = false
+          }
+          for (var j = 0; j < marks.length; j++) {
+            if (!fired[j] && now >= marks[j] && now - marks[j] < 1 && v.paused !== true) {
+              fired[j] = true
+              if (marks[j] === 41) expandDomains(box)
+              else castPurple(box)
+            }
+          }
+          previousTime = now
+        })
+        videoEl = box
+        ;(document.body || document.documentElement).appendChild(box)
+        document.body.classList.add('dshdw-video-on')
+        try {
+          var p = v.play()
+          if (p && p.catch) p.catch(function () {})
+        } catch (err) {
+          /* 需要用户手势的浏览器会拒绝，画面已出现、点一下即可播放 */
+        }
+        // 下一帧再淡入，避免首帧黑块闪烁
+        setTimeout(function () {
+          try {
+            box.classList.add('dshdw-video-show')
+          } catch (err) {
+            /* 忽略 */
+          }
+        }, 30)
+        // 兜底：ended 事件偶尔不触发（例如播放失败），10 分钟后强制关闭
+        videoTimer = setTimeout(function () {
+          videoTimer = null
+          closeVideo()
+        }, 10 * 60 * 1000)
+      } catch (err) {
+        log('video error: ' + err)
+        closeVideo()
       }
     }
 
@@ -722,12 +988,13 @@
       }
     }
 
-    function watchReply(kind) {
+    function watchReply(kind, meme) {
       try {
         var roots = assistantRoots()
         var last = roots.length ? roots[roots.length - 1] : null
         replyWatch = {
           kind: kind === 'question' ? 'question' : 'lyrics',
+          meme: meme || null,
           baseText: last ? replyTextOf(last) : '',
           deadline: Date.now() + 90000,
           patched: 0
@@ -1139,14 +1406,15 @@
           function (e) {
             try {
               if (!e || e.key !== 'Escape') return
-              if (!dancing) return
+              if (!dancing && !videoOn) return
               try {
                 e.preventDefault()
                 e.stopPropagation()
               } catch (err) {
                 /* 忽略 */
               }
-              stop()
+              if (videoOn) closeVideo()
+              else stop()
             } catch (err) {
               /* 忽略 */
             }
@@ -1200,6 +1468,10 @@
             }
             if (data.seq > signalSeq) {
               signalSeq = data.seq
+              if (data.kind === 'video') {
+                playVideo()
+                return
+              }
               if (data.kind === 'question') {
                 watchReply('question')
                 return
@@ -1242,7 +1514,7 @@
           /* 忽略 */
         }
         probe()
-        log('ready v' + DISCO_VERSION + '：发送「欧耶耶」或「？」触发；控制台 dshDiscoTest() 手动播放')
+        log('ready v' + DISCO_VERSION + '：发送「欧耶耶」或「？」触发；提到「新宿决战」播放彩蛋视频')
       } catch (err) {
         /* 忽略 */
       }
@@ -1282,6 +1554,20 @@
       window.dshDiscoReply = function (kind) {
         try {
           watchReply(kind === 'question' ? 'question' : 'lyrics')
+        } catch (err) {
+          /* 忽略 */
+        }
+      }
+      window.dshDiscoVideo = function () {
+        try {
+          playVideo()
+        } catch (err) {
+          /* 忽略 */
+        }
+      }
+      window.dshDiscoVideoClose = function () {
+        try {
+          closeVideo()
         } catch (err) {
           /* 忽略 */
         }
